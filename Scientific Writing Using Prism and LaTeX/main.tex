@@ -1,0 +1,353 @@
+\documentclass[10pt,a4paper]{article}
+
+% ------------------------------------------------------------
+% Page geometry and typography
+% ------------------------------------------------------------
+\usepackage[a4paper,margin=24mm,heightrounded]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{newtxtext}
+\usepackage{newtxmath}
+\usepackage{microtype}
+
+% ------------------------------------------------------------
+% Tables, lists, captions, and floats
+% ------------------------------------------------------------
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{placeins}
+
+% ------------------------------------------------------------
+% Headings, graphics, and color
+% ------------------------------------------------------------
+\usepackage{titlesec}
+\usepackage{titling}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+
+% ------------------------------------------------------------
+% References and hyperlinks
+% ------------------------------------------------------------
+\usepackage{cite}
+\usepackage{hyperref}
+\usepackage{bookmark}
+
+\definecolor{AcademicNavy}{HTML}{17324D}
+\definecolor{AcademicSlate}{HTML}{4C5C68}
+\definecolor{AcademicLink}{HTML}{274C77}
+\definecolor{AcademicLight}{HTML}{F3F6F8}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=AcademicNavy,
+  citecolor=AcademicLink,
+  urlcolor=AcademicSlate,
+  bookmarksnumbered=true,
+  pdfauthor={AI Researcher},
+  pdftitle={Benchmarking Factual Accuracy of Large Language Models Across Scientific Domains},
+  pdfsubject={Scientific benchmarking of large language model factual accuracy},
+  pdfkeywords={Large Language Models, Factual Accuracy, Hallucination, Scientific Benchmarking, Artificial Intelligence}
+}
+\urlstyle{same}
+
+% ------------------------------------------------------------
+% Global layout: compact, continuous academic text
+% ------------------------------------------------------------
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{0pt}
+\linespread{1.0}
+\frenchspacing
+\setlength{\emergencystretch}{2em}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\raggedbottom
+
+% Tight, consistent float spacing
+\setlength{\floatsep}{7pt plus 1pt minus 1pt}
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\intextsep}{8pt plus 2pt minus 2pt}
+
+% ------------------------------------------------------------
+% Section formatting
+% ------------------------------------------------------------
+\titleformat{\section}
+  {\normalfont\large\bfseries\sffamily\color{AcademicNavy}}
+  {\thesection}{0.6em}{}
+\titleformat{\subsection}
+  {\normalfont\normalsize\bfseries\sffamily\color{AcademicSlate}}
+  {\thesubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.7ex plus 0.35ex minus 0.15ex}{0.65ex}
+\titlespacing*{\subsection}{0pt}{1.25ex plus 0.25ex minus 0.1ex}{0.4ex}
+
+% ------------------------------------------------------------
+% Caption formatting
+% ------------------------------------------------------------
+\captionsetup{
+  font=small,
+  labelfont={bf,color=AcademicNavy},
+  labelsep=period,
+  justification=justified,
+  singlelinecheck=false,
+  skip=4pt
+}
+\captionsetup[table]{position=top}
+
+% ------------------------------------------------------------
+% Title block
+% ------------------------------------------------------------
+\setlength{\droptitle}{-2.4em}
+\pretitle{\begin{center}\LARGE\bfseries\sffamily\color{AcademicNavy}}
+\posttitle{\par\end{center}\vspace{0.2em}}
+\preauthor{\begin{center}\normalsize}
+\postauthor{\par\end{center}}
+\predate{\begin{center}\small\color{AcademicSlate}}
+\postdate{\par\end{center}\vspace{-0.25em}}
+
+% ------------------------------------------------------------
+% Table column helpers
+% ------------------------------------------------------------
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\title{Benchmarking Factual Accuracy of Large Language Models Across Scientific Domains}
+\author{Aman Kumar Emaley\\Roll No. MCL2026012}
+\date{}
+\begin{document}
+\maketitle
+
+\begin{abstract}\small
+The rapid integration of Large Language Models (LLMs) into scientific research, education, and clinical practice makes rigorous evaluation of factual accuracy increasingly important. Scientific applications impose a higher reliability requirement than ordinary conversational use because unsupported or incorrect statements may affect research conclusions, educational material, or clinical decisions. This paper reviews major approaches for benchmarking factual accuracy across scientific domains, with emphasis on biomedical science, mathematics and physics, and multimodal scientific reasoning. We examine representative resources such as PubMedQA, Med-PaLM/MultiMedQA, SciFact, TruthfulQA, MMLU, GPQA, SciBench, ScienceQA, HaluEval, FActScore, SelfCheckGPT, and FreshQA. We also discuss evaluation-support and mitigation techniques, including retrieval-augmented generation (RAG) and chain-of-thought (CoT) prompting. The review highlights recurring limitations---including benchmark contamination, temporal staleness, ambiguous scientific questions, retrieval errors, and the gap between answer correctness and evidence-grounded factuality---and argues for dynamic, domain-specific, human-in-the-loop evaluation frameworks.
+\end{abstract}
+
+\vspace{0.15em}
+\noindent\small\textbf{Keywords:} Large Language Models, Factual Accuracy, Hallucination, Scientific Benchmarking, Artificial Intelligence.
+\normalsize
+
+\section{Introduction}\label{sec:introduction}
+
+Large Language Models (LLMs), enabled by the Transformer architecture, have demonstrated strong capabilities in language understanding and generation \cite{vaswani2017attention,brown2020language}. Instruction tuning and reinforcement learning from human feedback have further improved the ability of language models to follow user instructions, but instruction-following should not be equated with factual reliability \cite{ouyang2022training}. As these systems are increasingly applied to scientific tasks, usefulness depends not only on fluency or benchmark performance but also on whether generated statements are factually supported.
+
+In biomedical settings, unsupported claims can be consequential because model outputs may be encountered in settings where correctness, uncertainty, and evidence quality matter \cite{jin2019pubmedqa,singhal2023large}. More generally, factuality is difficult to evaluate uniformly across science. A multiple-choice question may permit exact-match scoring, whereas an open-ended scientific explanation can contain a mixture of correct, incomplete, and unsupported claims. Scientific knowledge also changes over time, and some questions admit multiple defensible answers depending on assumptions, measurement conditions, or the current state of evidence.
+
+These characteristics motivate evaluation protocols that combine domain-specific tasks, evidence checking, uncertainty handling, and human review. This paper reviews representative resources and organizes them into three complementary dimensions: knowledge and reasoning benchmarks, evidence- and claim-grounded verification, and dynamic or hallucination-focused evaluation. It then discusses methods that can support factual reliability and identifies open research directions for robust cross-domain evaluation. The review structure is organized through Sections~\ref{sec:thematic} and~\ref{sec:approaches}.
+
+\section{Background and Literature Review}\label{sec:background}
+
+Early language-model evaluation focused largely on general linguistic competence. Benchmarks such as GLUE and SuperGLUE provided standardized tasks for language understanding, but scientific factuality introduces additional requirements because models may need specialized terminology, quantitative reasoning, evidence retrieval, and awareness of uncertainty \cite{wang2018glue,wang2019superglue}. MMLU broadened academic evaluation by covering 57 subjects, including mathematics, computer science, medicine, and other academic or professional domains \cite{hendrycks2021mmlu}.
+
+A central failure mode is hallucination: a model may generate fluent content that is unsupported, unverifiable, or inconsistent with available evidence. TruthfulQA was designed to test whether language models reproduce common misconceptions and false beliefs, providing a useful complement to ordinary task-accuracy benchmarks \cite{lin2022truthfulqa}. HaluEval expanded hallucination-oriented evaluation through a large collection of generated and human-annotated examples \cite{li2023halueval}.
+
+For scientific text, evaluation increasingly emphasizes explicit evidence. SciFact introduced a scientific claim-verification task in which systems retrieve evidence from research abstracts and classify claims as supported or refuted while identifying rationales \cite{wadden2020scifact}. At the response level, FActScore addresses long-form factuality by decomposing generated text into atomic claims and measuring the proportion supported by a reliable knowledge source \cite{min2023factscore}. Black-box consistency methods such as SelfCheckGPT provide another perspective by testing whether sampled responses agree with one another without requiring access to model probabilities or an external fact database \cite{manakul2023selfcheckgpt}.
+
+\section{Domain-Specific Benchmarking}\label{sec:thematic}
+
+Different scientific fields expose different failure modes. Biomedical tasks emphasize terminology, clinical knowledge, evidence interpretation, and potential harm; mathematics and physics emphasize symbolic and quantitative reasoning; and multimodal science requires joint interpretation of text, diagrams, charts, and other visual evidence. Table~\ref{tab:benchmarks} summarizes representative benchmarks and evaluation methods used across these settings.
+
+\begin{table}[!htbp]
+\centering
+\caption{Representative resources for evaluating factuality and scientific reasoning in LLMs.}
+\label{tab:benchmarks}
+\small
+\renewcommand{\arraystretch}{1.08}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabularx}{\linewidth}{@{}L{2.0cm} L{2.45cm} Y Y@{}}
+\toprule
+\textbf{Resource} & \textbf{Primary focus} & \textbf{Strength} & \textbf{Principal limitation} \\
+\midrule
+PubMedQA & Biomedical research QA & Evidence-linked scientific reading with a compact answer space & Primarily biomedical and research-text based \\
+MultiMedQA / Med-PaLM & Medical knowledge and open-ended QA & Combines several medical QA datasets with expert evaluation & Clinical safety and nuanced reasoning require human assessment \\
+SciFact & Scientific claim verification & Explicit evidence retrieval and support/refute labels & Coverage is tied to the underlying scientific corpus \\
+TruthfulQA & General truthfulness & Targets misconceptions and false-belief imitation & Not science-specific and mainly question-answer based \\
+MMLU / GPQA & Academic and expert reasoning & Broad subject coverage; GPQA stresses difficult expert questions & Accuracy can conflate knowledge, reasoning, and test-taking effects \\
+SciBench & College-level scientific problem solving & Tests quantitative and symbolic scientific reasoning & Limited coverage of open-ended evidence use \\
+ScienceQA & Multimodal science QA & Integrates text, images, and explanatory reasoning & Dataset setting differs from expert research workflows \\
+HaluEval & Hallucination recognition & Large-scale hallucination-focused evaluation & Synthetic construction may introduce artifacts \\
+FActScore & Atomic factual precision & Fine-grained scoring for long-form generation & Decomposition and evidence-checking errors can propagate \\
+SelfCheckGPT & Black-box consistency checking & Requires neither an external knowledge base nor token probabilities & Consistency alone does not establish truth \\
+FreshQA / FreshLLMs & Dynamic factuality & Tests time-sensitive and false-premise questions & Requires continuously updated knowledge and repeated evaluation \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\FloatBarrier
+
+\subsection{Medical and Biomedical Sciences}
+
+Biomedical evaluation requires more than recall of medical terminology. PubMedQA uses questions derived from biomedical research abstracts and asks systems to answer with \textit{yes}, \textit{no}, or \textit{maybe}, while preserving the associated research context \cite{jin2019pubmedqa}. MultiMedQA broadened this setting by combining several biomedical and medical question-answering datasets and introducing human evaluation dimensions including factuality, precision, potential harm, and bias \cite{singhal2023large}.
+
+The Med-PaLM line of work illustrates why accuracy metrics alone are insufficient. Its evaluation combines several medical datasets with additional expert assessment, highlighting the need to distinguish examination-style question answering from safe, evidence-grounded clinical reasoning \cite{singhal2023large}. Accordingly, biomedical factuality benchmarks should include uncertainty, abstention, evidence attribution, and harm-sensitive evaluation in addition to exact answer correctness.
+
+\subsection{Mathematics and Physics}
+
+Mathematics and physics pose a different challenge because many tasks require explicit quantitative manipulation rather than simple retrieval. SciBench was developed to evaluate college-level scientific problem-solving and includes tasks requiring mathematical derivation and numerical reasoning \cite{wang2023scibench}. GPQA complements this setting with difficult expert-written questions in biology, physics, and chemistry \cite{rein2023gpqa}.
+
+These benchmarks are useful for comparing reasoning ability, but they do not fully measure factuality in scientific writing. A model may arrive at a correct numerical answer for the wrong reason, or produce an apparently valid derivation containing an unsupported intermediate assumption. Evaluation should therefore combine final-answer correctness with step-level validity, unit consistency, assumption tracking, and, where possible, independent verification.
+
+\subsection{Multimodal Scientific Reasoning}
+
+Scientific knowledge is frequently communicated through diagrams, graphs, tables, microscopy images, and other visual representations. ScienceQA provides a benchmark for multimodal science question answering and includes questions associated with both textual and visual information \cite{lu2022scienceqa}. Such resources demonstrate that factuality cannot always be assessed from generated text alone: a model must also correctly interpret the visual evidence on which a conclusion depends.
+
+For multimodal scientific systems, evaluation should therefore separate at least three components: visual perception, scientific reasoning, and final answer generation. Errors in any one of these components can produce a factually incorrect response even when the language output is fluent and well structured.
+
+\section{Current Approaches to Improve and Evaluate Accuracy}\label{sec:approaches}
+
+No single technique guarantees factuality. Current systems typically combine stronger prompting or reasoning strategies with external evidence, post-hoc verification, or abstention mechanisms.
+
+\subsection{Chain-of-Thought Prompting}
+
+Chain-of-Thought (CoT) prompting asks a model to generate intermediate reasoning steps. The original CoT work showed that few-shot reasoning examples can improve performance on arithmetic, commonsense, and symbolic reasoning tasks \cite{wei2022chain}. ScienceQA also explored explanation-based reasoning in multimodal science question answering \cite{lu2022scienceqa}. In scientific evaluation, intermediate reasoning can make assumptions and calculations easier to inspect. However, CoT should not be treated as a factuality guarantee: a model can produce a coherent but incorrect chain of reasoning. Scientific benchmarks should therefore assess the validity of reasoning steps rather than rewarding the mere presence of an explanation.
+
+\subsection{Retrieval-Augmented Generation}
+
+Retrieval-Augmented Generation (RAG) combines model parameters with information retrieved from an external knowledge source. The RAG framework demonstrated the usefulness of retrieval for knowledge-intensive tasks \cite{lewis2020rag}. Related empirical work has also examined retrieval during language-model pretraining and its interaction with autoregressive generation \cite{wang2023retrieval}. In scientific applications, retrieval can provide provenance by linking claims to papers, databases, or institutional sources.
+
+RAG does not eliminate factual errors. Retrieval failures, outdated documents, irrelevant passages, citation mismatch, and incorrect synthesis can all produce unsupported answers. Scientific RAG evaluation should therefore score the retrieval stage, evidence relevance, evidence entailment, citation completeness, and final answer correctness separately.
+
+\subsection{Consistency, Atomic Scoring, and Dynamic Evaluation}
+
+Black-box consistency methods such as SelfCheckGPT assess whether independently sampled outputs agree, which can help identify unstable claims \cite{manakul2023selfcheckgpt}. FActScore instead decomposes a response into atomic claims and estimates the fraction supported by evidence \cite{min2023factscore}. Multilingual evaluation is also emerging; Multi-FAct extends factuality assessment with FActScore-oriented analysis across multiple languages \cite{shafayat2024multifact}.
+
+Dynamic benchmarks take a further step by testing knowledge that changes over time. FreshQA, introduced within the FreshLLMs work, evaluates correctness and hallucination on time-sensitive questions and questions containing false premises \cite{vu2024freshllms}. These developments motivate a unified benchmark protocol in which evaluation mode and factuality metrics are reported separately, as shown in Figure~\ref{fig:protocol}.
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[
+  >=Stealth,
+  root/.style={
+    draw=AcademicNavy,
+    very thick,
+    rounded corners=3pt,
+    fill=AcademicNavy!7,
+    text=AcademicNavy,
+    align=center,
+    text width=10.8cm,
+    minimum height=8mm,
+    inner sep=4pt,
+    font=\sffamily\bfseries\small
+  },
+  mode/.style={
+    draw=AcademicNavy,
+    thick,
+    rounded corners=3pt,
+    fill=AcademicNavy!4,
+    text=AcademicNavy,
+    align=center,
+    text width=4.2cm,
+    minimum height=9mm,
+    inner sep=4pt,
+    font=\sffamily\bfseries\footnotesize
+  },
+  task/.style={
+    draw=AcademicSlate,
+    thick,
+    rounded corners=2pt,
+    fill=white,
+    text=AcademicSlate,
+    align=center,
+    text width=4.2cm,
+    minimum height=10mm,
+    inner sep=4pt,
+    font=\sffamily\footnotesize
+  },
+  metrics/.style={
+    draw=AcademicNavy,
+    thick,
+    rounded corners=3pt,
+    fill=AcademicLight,
+    text=black,
+    align=center,
+    text width=12.0cm,
+    minimum height=13mm,
+    inner sep=5pt,
+    font=\sffamily\footnotesize
+  },
+  arrow/.style={->,thick,color=AcademicNavy}
+]
+
+% All coordinates are explicit so the diagram remains centered within the text block.
+\node[root] (root) at (0,0) {Cross-Domain Scientific LLM Factuality Benchmark};
+
+\node[mode] (closed) at (-3.0,-1.25) {Closed-book\\generation};
+\node[mode] (grounded) at (3.0,-1.25) {Evidence-grounded\\generation};
+
+\node[task] (closedtask) at (-3.0,-2.75)
+  {Constrained scientific QA\\Claim verification};
+\node[task] (groundedtask) at (3.0,-2.75)
+  {Long-form synthesis\\Temporal and dynamic questions};
+
+\node[metrics] (metrics) at (0,-4.35)
+  {\textbf{Evaluation dimensions:} answer correctness $\cdot$ atomic claim precision $\cdot$ evidence entailment $\cdot$ citation completeness $\cdot$ calibration $\cdot$ abstention $\cdot$ error severity};
+
+\draw[arrow] (root.south) -- (closed.north);
+\draw[arrow] (root.south) -- (grounded.north);
+\draw[arrow] (closed.south) -- (closedtask.north);
+\draw[arrow] (grounded.south) -- (groundedtask.north);
+\draw[arrow] (closedtask.south) -- (metrics.north west);
+\draw[arrow] (groundedtask.south) -- (metrics.north east);
+
+\end{tikzpicture}
+\caption{Conceptual protocol for cross-domain evaluation of scientific LLM factuality. The framework separates the evaluation mode from the metrics used to characterize factual reliability.}
+\label{fig:protocol}
+\end{figure}
+
+\FloatBarrier
+
+
+
+
+\section{Research Challenges and Limitations}\label{sec:limitations}
+
+\begin{description}[
+  leftmargin= 3.2cm,
+  labelwidth=2.85cm,
+  labelsep=0.3cm,
+  itemsep=0.25\baselineskip,
+  topsep=0.15\baselineskip,
+  parsep=0pt,
+  partopsep=0pt,
+  style=multiline,
+  font=\normalfont\bfseries
+]
+
+\item[Data contamination:]
+LLMs are trained on very large corpora, and benchmark questions or close variants may overlap with training data. High scores can therefore reflect memorization or indirect exposure rather than robust generalization. Contamination analysis and held-out evaluation are important for credible comparisons.
+
+\item[Static benchmarks:]
+Scientific knowledge evolves continuously. A model can perform well on a static dataset while giving outdated answers to questions whose correct response depends on recent evidence. Dynamic evaluation is therefore necessary for time-sensitive scientific tasks.
+
+\item[Ambiguity and underspecification:]
+Many scientific questions depend on assumptions, experimental conditions, or competing interpretations. Automatic exact-match scoring can incorrectly label defensible answers as wrong, while unconstrained human evaluation can suffer from inconsistency.
+
+\item[Retrieval and citation errors:]
+In evidence-grounded systems, factuality depends on both retrieval and generation. A relevant document can be retrieved but misinterpreted, cited incorrectly, or used to support a claim that the source does not actually entail.
+
+\item[Calibration and abstention:]
+A scientifically useful system should not only answer correctly when possible; it should also express uncertainty and abstain when available evidence is insufficient. Conventional accuracy metrics often fail to measure this behavior.
+
+\end{description}
+
+\section{Research Gaps and Future Directions}\label{sec:future}
+
+Future research should move from single-number benchmark scores toward evaluation frameworks that expose the sources of factual error. A practical benchmark could combine static and dynamic questions, closed-book and evidence-grounded modes, and both automatic and expert assessment.
+
+A second priority is temporal alignment. FreshQA demonstrates that current-world knowledge can be evaluated explicitly through dynamic questions, but scientific benchmarking should also consider publication dates, retractions, updated guidelines, and evolving consensus \cite{vu2024freshllms}. Time-aware evaluation would make it possible to test whether a model knows not only \emph{what} is supported but also \emph{when} a claim was supported.
+
+A third gap concerns human oversight and scientific provenance. Future systems should expose the evidence behind important claims, quantify uncertainty, and support expert correction. Mechanistic interpretability may eventually help explain how scientific information is represented internally, but near-term progress is more likely to come from better evidence tracing, contamination auditing, calibration studies, and domain-specific human-in-the-loop protocols.
+
+\section{Conclusion}\label{sec:conclusion}
+
+Benchmarking factual accuracy in scientific LLMs is a multidimensional problem. General academic benchmarks measure knowledge and reasoning breadth, while domain-specific resources such as PubMedQA, SciFact, GPQA, and ScienceQA probe specialized forms of scientific understanding. Hallucination-oriented resources such as HaluEval, SelfCheckGPT, and FActScore address additional failure modes, while FreshQA tests temporal factuality.
+
+The evidence across these approaches indicates that no single benchmark or mitigation method is sufficient. The principal limitations are summarized in Section~\ref{sec:limitations}, and future directions are developed in Section~\ref{sec:future}. Retrieval can improve access to current evidence, and structured reasoning can expose intermediate steps, but both remain vulnerable to errors. Robust scientific evaluation should therefore combine correctness, evidence support, calibration, abstention, temporal validity, and error severity. Such multidimensional protocols can provide a more realistic basis for assessing whether LLMs are reliable enough for scientific research, education, and other high-stakes uses.
+
+% ------------------------------------------------------------
+% References
+% ------------------------------------------------------------
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

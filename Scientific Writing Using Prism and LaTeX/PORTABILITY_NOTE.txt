@@ -1,0 +1,3 @@
+Assignment 4 portability note
+
+The final submission folder contains main.tex as the root file, references.bib, the Figures/ evidence folder, the corrected prompt log, error log, paragraph comparison, reflection, and the two final-paper PDF artifacts. The Overleaf implementation screenshot documents the compiled project state and the portability checks required by Part L. The original paper contains no paper-specific mathematical equation; this is explicitly recorded in the corrected prompt log and checklist.

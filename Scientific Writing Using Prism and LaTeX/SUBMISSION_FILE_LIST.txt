@@ -1,0 +1,21 @@
+SUBMISSION FILE LIST — ASSIGNMENT 4
+Student: Aman Kumar Emaley
+Roll No.: MCL2026012
+
+Submit the complete folder: Aman_Kumar_Emaley_MCL2026012/
+
+Required files:
+1. Original_Paper.pdf
+2. Prism_Final_Paper.pdf
+3. Overleaf_Final_Paper.pdf
+4. main.tex
+5. references.bib
+6. Figures/ (all seven attached evidence screenshots)
+7. Prompt_Log.pdf — corrected actual prompts paired with matching screenshots
+8. Error_Log.pdf
+9. Paragraph_Comparison.pdf — Version A, B, and C with analysis
+10. Reflection.pdf
+11. Submission_Checklist.pdf
+12. PORTABILITY_NOTE.txt
+
+The ZIP archive contains this complete folder. The original paper has no paper-specific mathematical equation; this is documented as not applicable.
