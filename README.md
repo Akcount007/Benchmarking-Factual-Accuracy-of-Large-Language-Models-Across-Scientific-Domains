@@ -1,122 +1,314 @@
 # Awesome Scientific LLM Factuality
 
-A curated research and assignment repository on **benchmarking factual accuracy of large language models across scientific domains**.
+[![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Topic](https://img.shields.io/badge/topic-scientific%20LLM%20factuality-blue)](#overview)
+[![Resources](https://img.shields.io/badge/resources-papers%20%7C%20benchmarks%20%7C%20tools-brightgreen)](#resource-explorer)
 
-This repository brings together an AI-assisted research paper, a citation-integrity audit, citation mapping, a structured literature review, Prism/LaTeX conversion evidence, and a final ACM-style review manuscript.
+A curated collection of **papers, benchmarks, datasets, tools, implementations, review materials, and reproducible writing artifacts** for evaluating and improving factual accuracy in scientific Large Language Models (LLMs).
 
-## Quick navigation
+> **Scope:** scientific question answering, claim verification, hallucination detection, long-form factuality, evidence attribution, retrieval augmentation, multilingual evaluation, temporal freshness, and expert scientific reasoning.
 
-- [Assignment portfolio](#assignment-portfolio)
-- [Repository evidence at a glance](#repository-evidence-at-a-glance)
-- [Research scope](#research-scope)
-- [Benchmark and method map](#benchmark-and-method-map)
+## Contents
+
+- [Overview](#overview)
+- [Start here](#start-here)
+- [Repository collections](#repository-collections)
+- [Benchmark landscape](#benchmark-landscape)
+- [Evaluation dimensions](#evaluation-dimensions)
+- [Resource explorer](#resource-explorer)
 - [Recommended evaluation protocol](#recommended-evaluation-protocol)
-- [Literature-review workflow](#literature-review-workflow)
+- [Citation-integrity workflow](#citation-integrity-workflow)
+- [Literature-discovery workflow](#literature-discovery-workflow)
+- [LaTeX and reproducibility resources](#latex-and-reproducibility-resources)
 - [Repository structure](#repository-structure)
-- [Compile the LaTeX projects](#compile-the-latex-projects)
-- [Citation policy](#citation-policy)
-- [References](#references)
+- [Contributing](#contributing)
+- [Reference checklist](#reference-checklist)
+- [License](#license)
 
-## Assignment portfolio
+## Overview
 
-| Assignment | Description | Deliverables |
+Scientific LLM evaluation requires more than measuring whether an answer sounds plausible. A response may contain a correct final answer but unsupported reasoning, an irrelevant citation, a wrong numerical value, or outdated evidence. The resources in this repository therefore separate:
+
+- **answer correctness** from **reasoning validity**;
+- **publication authenticity** from **claim–citation support**;
+- **closed-book knowledge** from **retrieval-grounded performance**;
+- **short-answer accuracy** from **long-form atomic factuality**;
+- **static benchmark performance** from **temporal freshness**; and
+- **general capability** from **domain-specific scientific risk**.
+
+The central idea is to report a **factuality profile**, not just one aggregate score.
+
+## Start here
+
+Choose the evaluation problem closest to your use case:
+
+| If you want to evaluate… | Start with | Why |
 |---|---|---|
-| **1 — AI-assisted research paper** | Initial paper establishing the topic, benchmark families and seed references | [Research paper PDF](paper/AI_Assisted_Research_Paper.pdf) |
-| **2 — Citation-integrity audit** | Systematic authenticity and claim-support audit of the paper's 10 references | [Audit PDF](citation-audit/Citation_Integrity_Audit.pdf.pdf) |
-| **3 — Curated GitHub repository** | Organized papers, datasets, tools, implementations and learning materials | [References](references/references.md) · [Datasets](datasets/datasets.md) · [Tools](tools/tools.md) · [Implementations](implementations/github-repositories.md) |
-| **4 — Citation verification and mapping** | Claim-level verification worksheet and ResearchRabbit citation-network evidence | [Assignment PDF](citation%20mapping/citation%20mapping.pdf) · [Verification workbook](citation%20mapping/mcl2026012_citation_verification%20%281%29.xlsx) · [Folder guide](citation%20mapping/README.md) |
-| **5 — AI-assisted literature-review writing** | Comparative review of 20 papers using ResearchRabbit, Litmaps, Semantic Scholar and Elicit | [Review PDF](AI-assisted%20Literature%20Review%20Writing/ai%20assited%20litrature%20review%20writing.pdf) · [Literature workbook](AI-assisted%20Literature%20Review%20Writing/LiteratureList_T1.xlsx) · [Folder guide](AI-assisted%20Literature%20Review%20Writing/README.md) |
-| **6 — Scientific writing using Prism and LaTeX** | Original paper, Prism conversion, Overleaf validation, prompt log, error log, comparison and reflection | [Prism project](Scientific%20Writing%20Using%20Prism%20and%20LaTeX/) · [Prism final PDF](Scientific%20Writing%20Using%20Prism%20and%20LaTeX/Prism_Final_Paper.pdf) · [LaTeX source](Scientific%20Writing%20Using%20Prism%20and%20LaTeX/main.tex) |
-| **Final review paper — LaTeX and Overleaf** | Expanded nine-page ACM-style review with two figures and a 21-entry BibTeX bibliography | [Final PDF](Review%20Paper%20Writing%20and%20Formatting%20Using%20LaTeX%20and%20Overleaf/benchmarking_factual_accuracy_scientific_domains_final.pdf) · [Source project](Review%20Paper%20Writing%20and%20Formatting%20Using%20LaTeX%20and%20Overleaf/) |
+| Scientific claim verification | [SciFact](https://doi.org/10.18653/v1/2020.emnlp-main.609) | Links claims to abstract-level evidence and support/refute labels |
+| Biomedical research QA | [PubMedQA](https://doi.org/10.18653/v1/D19-1259) | Uses biomedical questions derived from PubMed abstracts |
+| Truthfulness under common misconceptions | [TruthfulQA](https://doi.org/10.18653/v1/2022.acl-long.229) | Tests whether models reproduce widely repeated false beliefs |
+| Large-scale hallucination recognition | [HaluEval](https://doi.org/10.18653/v1/2023.emnlp-main.397) | Provides generated and human-annotated hallucination examples |
+| Long-form factual precision | [FActScore](https://arxiv.org/abs/2305.14251) | Decomposes responses into atomic facts |
+| Black-box hallucination screening | [SelfCheckGPT](https://arxiv.org/abs/2303.08896) | Uses consistency across sampled generations |
+| Current or changing knowledge | [FreshLLMs](https://doi.org/10.18653/v1/2024.findings-acl.813) | Evaluates search augmentation, freshness, and false premises |
+| Multilingual factuality | [Multi-FAct](https://arxiv.org/abs/2402.18045) | Extends atomic factuality analysis across languages |
+| Graduate-level science reasoning | [GPQA](https://arxiv.org/abs/2311.12022) | Covers expert biology, physics, and chemistry questions |
+| Medical hallucination risk | [Med-HALT](https://arxiv.org/abs/2307.15343) | Focuses on medical reasoning and memory-based hallucination |
+| Tool-assisted verification | [FacTool](https://arxiv.org/abs/2307.13528) | Uses external tools to verify decomposed claims |
+| Source-grounded summarization | [QAGS](https://doi.org/10.18653/v1/2020.acl-main.671) | Evaluates factual consistency through generated questions |
 
-## Repository evidence at a glance
+## Repository collections
 
-| Evidence | Repository result |
-|---|---|
-| Initial research paper | 4 pages and 10 references |
-| Citation-integrity audit | 10 references audited; the submitted worksheet reports 10 verified references and an authenticity score of 100/100 |
-| Citation-support worksheet | 10 claim–citation records: 7 fully supported, 2 partially supported and 1 not supported/misattributed |
-| Literature-review evidence base | 20 selected papers published from 2019–2024 |
-| Research tools compared | ResearchRabbit, Litmaps, Semantic Scholar and Elicit |
-| Tool contribution records | Semantic Scholar 17 papers, Elicit 14, ResearchRabbit 12 and Litmaps 11 before final synthesis |
-| Prism evidence | 7 recorded prompts with screenshots, plus error log, paragraph comparison, reflection and checklist |
-| LaTeX bibliographies | 21 BibTeX entries in each complete manuscript project |
-| Final formatted review | 9 pages, 2 figures, benchmark table, cross-references and ACM-style bibliography |
+| Collection | Description | Open |
+|---|---|---|
+| Research paper | Introductory review of scientific-LLM factuality | [PDF](paper/AI_Assisted_Research_Paper.pdf) |
+| Citation-integrity audit | Reference-authenticity and claim-support audit | [PDF](citation-audit/Citation_Integrity_Audit.pdf.pdf) |
+| Citation verification and mapping | Claim-level verification workbook and citation-network evidence | [Folder](citation%20mapping/) |
+| Literature-review package | Comparative review and structured 20-paper workbook | [Folder](AI-assisted%20Literature%20Review%20Writing/) |
+| Prism and LaTeX package | Conversion evidence, prompts, error log, reflection, and source | [Folder](Scientific%20Writing%20Using%20Prism%20and%20LaTeX/) |
+| ACM-style review project | Expanded review paper, figures, LaTeX, and BibTeX | [Folder](Review%20Paper%20Writing%20and%20Formatting%20Using%20LaTeX%20and%20Overleaf/) |
+| Dataset guide | Shortlist of verified datasets and benchmarks | [Guide](datasets/datasets.md) |
+| Tool guide | Factuality and RAG evaluation tools | [Guide](tools/tools.md) |
+| Implementations | Official and useful GitHub repositories | [Guide](implementations/github-repositories.md) |
+| Verified references | Organized bibliography with persistent links | [Guide](references/references.md) |
 
-The counts above come directly from the submitted PDFs, Excel workbooks, LaTeX projects and checklists stored in this repository.
+## Benchmark landscape
 
-## Research scope
+| Resource | Year | Domain | Task | Evidence setting | Main output |
+|---|---:|---|---|---|---|
+| [PubMedQA](https://doi.org/10.18653/v1/D19-1259) | 2019 | Biomedical | Research QA | Abstract supplied | Yes / no / maybe |
+| [SciFact](https://doi.org/10.18653/v1/2020.emnlp-main.609) | 2020 | Scientific literature | Claim verification | Abstract retrieval | Support / refute + rationale |
+| [QAGS](https://doi.org/10.18653/v1/2020.acl-main.671) | 2020 | Summarization | Factual consistency | Source document supplied | QA-based consistency |
+| [TruthfulQA](https://doi.org/10.18653/v1/2022.acl-long.229) | 2022 | Open domain | Adversarial truthfulness | Primarily closed-book | Truthful / informative answer |
+| [HaluEval](https://doi.org/10.18653/v1/2023.emnlp-main.397) | 2023 | General NLP | Hallucination recognition | Task-dependent | Hallucination classification |
+| [SelfCheckGPT](https://arxiv.org/abs/2303.08896) | 2023 | Open domain | Black-box checking | No external database required | Consistency-based score |
+| [FActScore](https://arxiv.org/abs/2305.14251) | 2023 | Long-form generation | Atomic factual precision | External knowledge source | Supported atomic-fact ratio |
+| [GPQA](https://arxiv.org/abs/2311.12022) | 2023 | Biology, physics, chemistry | Expert QA | Closed-book / controlled | Multiple-choice accuracy |
+| [Med-HALT](https://arxiv.org/abs/2307.15343) | 2023 | Medicine | Hallucination and reasoning | Mixed | Task accuracy |
+| [FreshLLMs](https://doi.org/10.18653/v1/2024.findings-acl.813) | 2024 | Dynamic knowledge | Freshness and false premises | Search-augmented | Correctness and hallucination |
+| [Multi-FAct](https://arxiv.org/abs/2402.18045) | 2024 | Multilingual | Atomic factuality | Language-dependent retrieval | Multilingual factual precision |
 
-Scientific factuality is not captured by a single accuracy score. The reviewed literature distinguishes several related evaluation targets:
+## Evaluation dimensions
 
-1. **Knowledge and reasoning accuracy** — whether the model selects or derives a correct answer.
-2. **Evidence-grounded verification** — whether a claim is supported or refuted by an identified source, as operationalized by SciFact.[^scifact]
-3. **Biomedical research QA** — whether a model can reason over specialized PubMed abstracts, as tested by PubMedQA.[^pubmedqa]
-4. **Truthfulness under misconceptions** — whether a model reproduces common human falsehoods, as examined by TruthfulQA.[^truthfulqa]
-5. **Hallucination recognition** — whether generated or supplied content can be classified as hallucinated, as evaluated by HaluEval.[^halueval]
-6. **Long-form atomic factuality** — whether individual propositions in a response are supported, as measured by FActScore.[^factscore]
-7. **Black-box consistency checking** — whether independently sampled generations reveal unstable claims, as used by SelfCheckGPT.[^selfcheckgpt]
-8. **Retrieval and temporal freshness** — whether search or retrieval helps answer changing questions while preserving evidence provenance, as studied by RAG and FreshLLMs.[^rag][^freshllms]
-9. **Multilingual factuality** — whether atomic factual precision transfers across languages, as explored by Multi-FAct.[^multifact]
-10. **Expert scientific reasoning** — whether models can answer difficult biology, physics and chemistry questions, as tested by GPQA.[^gpqa]
+Use this checklist when designing a benchmark or comparing model results:
 
-The repository's review papers therefore recommend reporting a **profile of performance** rather than one undifferentiated score.
+| Dimension | Key question | Example measure |
+|---|---|---|
+| Correctness | Is the final answer correct? | Exact match, expert score |
+| Reasoning | Are the intermediate steps valid? | Step-level verification |
+| Factual precision | Which generated claims are supported? | Atomic precision |
+| Factual coverage | Are important supported facts omitted? | Atomic recall / completeness |
+| Evidence entailment | Does each source support its associated claim? | Claim–citation support |
+| Retrieval quality | Was decisive evidence retrieved? | Recall@k, context precision |
+| Attribution | Are claims linked to the correct sources? | Citation precision and completeness |
+| Numerical fidelity | Are values, units, and transformations correct? | Numeric and unit checks |
+| Calibration | Does confidence reflect correctness? | ECE, Brier score |
+| Abstention | Does the model decline unsupported questions? | Selective accuracy |
+| Freshness | Is the answer correct for the evaluation date? | Time-stamped accuracy |
+| Robustness | Does performance survive paraphrases and false premises? | Adversarial consistency |
+| Safety | What is the consequence of an error? | Domain-specific severity tier |
 
-## Benchmark and method map
+## Resource explorer
 
-| Resource | Primary evaluation target | Typical unit | Scientific relevance |
-|---|---|---|---|
-| [PubMedQA](https://doi.org/10.18653/v1/D19-1259) | Biomedical QA | Yes/no/maybe answer with abstract context | Biomedical evidence interpretation |
-| [SciFact](https://doi.org/10.18653/v1/2020.emnlp-main.609) | Scientific claim verification | Claim, evidence rationale and support/refute label | Claim-level scientific evidence |
-| [TruthfulQA](https://doi.org/10.18653/v1/2022.acl-long.229) | Resistance to common falsehoods | Adversarial question and answer | Misconception and truthfulness testing |
-| [HaluEval](https://doi.org/10.18653/v1/2023.emnlp-main.397) | Hallucination recognition | Generated response or passage | Controlled hallucination evaluation |
-| [SelfCheckGPT](https://arxiv.org/abs/2303.08896) | Black-box hallucination detection | Multiple sampled generations | Screening without model probabilities |
-| [FActScore](https://arxiv.org/abs/2305.14251) | Long-form factual precision | Atomic proposition | Fine-grained response evaluation |
-| [Multi-FAct](https://arxiv.org/abs/2402.18045) | Multilingual factuality | Multilingual atomic proposition | Language-aware evaluation |
-| [GPQA](https://arxiv.org/abs/2311.12022) | Graduate-level scientific reasoning | Expert multiple-choice question | Biology, physics and chemistry |
-| [Med-HALT](https://arxiv.org/abs/2307.15343) | Medical hallucination and reasoning | Medical reasoning and recall task | Domain-specific medical risk |
-| [FreshLLMs](https://doi.org/10.18653/v1/2024.findings-acl.813) | Dynamic and search-augmented factuality | Time-sensitive or false-premise question | Temporal freshness and retrieval |
-| [QAGS](https://doi.org/10.18653/v1/2020.acl-main.671) | Source-grounded summary factuality | Generated question–answer pair | Scientific summarization |
-| [FacTool](https://arxiv.org/abs/2307.13528) | Tool-augmented factuality checking | Decomposed claim and tool result | Heterogeneous verifiable claims |
+<details>
+<summary><strong>Surveys and conceptual foundations</strong></summary>
 
-No row is a complete substitute for another: constrained QA, claim verification, atomic scoring and retrieval-enabled evaluation expose different failure modes.
+- [Survey of Hallucination in Natural Language Generation](https://doi.org/10.1145/3571730) — broad taxonomy of hallucination across generation tasks.
+- [Siren's Song in the AI Ocean](https://arxiv.org/abs/2309.01219) — survey of causes, detection, and mitigation for hallucinations in LLMs.
+- [A Multitask, Multilingual, Multimodal Evaluation of ChatGPT](https://arxiv.org/abs/2302.04023) — broad evidence across tasks, languages, and modalities.
+- [Large Language Models Encode Clinical Knowledge](https://doi.org/10.1038/s41586-023-06291-2) — medical QA and human evaluation dimensions.
+
+</details>
+
+<details>
+<summary><strong>Scientific QA and reasoning benchmarks</strong></summary>
+
+- [PubMedQA](https://doi.org/10.18653/v1/D19-1259)
+- [GPQA](https://arxiv.org/abs/2311.12022)
+- [SciBench](https://arxiv.org/abs/2307.10635)
+- [ScienceQA](https://arxiv.org/abs/2209.09513)
+- [MMLU](https://arxiv.org/abs/2009.03300)
+- [Med-HALT](https://arxiv.org/abs/2307.15343)
+
+</details>
+
+<details>
+<summary><strong>Claim verification and factuality metrics</strong></summary>
+
+- [SciFact](https://doi.org/10.18653/v1/2020.emnlp-main.609)
+- [QAGS](https://doi.org/10.18653/v1/2020.acl-main.671)
+- [FActScore](https://arxiv.org/abs/2305.14251)
+- [Multi-FAct](https://arxiv.org/abs/2402.18045)
+- [Program-Guided Fact-Checking](https://doi.org/10.18653/v1/2023.acl-long.385)
+- [FacTool](https://arxiv.org/abs/2307.13528)
+
+</details>
+
+<details>
+<summary><strong>Hallucination and truthfulness evaluation</strong></summary>
+
+- [TruthfulQA](https://doi.org/10.18653/v1/2022.acl-long.229)
+- [HaluEval](https://doi.org/10.18653/v1/2023.emnlp-main.397)
+- [SelfCheckGPT](https://arxiv.org/abs/2303.08896)
+- [Med-HALT](https://arxiv.org/abs/2307.15343)
+
+</details>
+
+<details>
+<summary><strong>Retrieval, grounding, and temporal freshness</strong></summary>
+
+- [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://proceedings.neurips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html)
+- [Shall We Pretrain Autoregressive Language Models with Retrieval?](https://doi.org/10.18653/v1/2023.emnlp-main.482)
+- [FreshLLMs](https://doi.org/10.18653/v1/2024.findings-acl.813)
+
+</details>
+
+<details>
+<summary><strong>Official implementations and evaluation libraries</strong></summary>
+
+- [HaluEval](https://github.com/RUCAIBox/HaluEval)
+- [SelfCheckGPT](https://github.com/potsawee/selfcheckgpt)
+- [TruthfulQA](https://github.com/sylinrl/TruthfulQA)
+- [SciFact](https://github.com/allenai/scifact)
+- [FActScore](https://github.com/shmsw25/FActScore)
+- [FacTool](https://github.com/GAIR-NLP/factool)
+- [TruLens](https://github.com/truera/trulens)
+- [Ragas](https://github.com/explodinggradients/ragas)
+
+</details>
+
+<details>
+<summary><strong>Literature discovery and review tools</strong></summary>
+
+- [ResearchRabbit](https://www.researchrabbit.ai/) — citation-network exploration.
+- [Litmaps](https://www.litmaps.com/) — forward/backward citation mapping and monitoring.
+- [Semantic Scholar](https://www.semanticscholar.org/) — scholarly search, metadata, and citation discovery.
+- [Elicit](https://elicit.com/) — structured literature comparison and evidence extraction.
+- [Crossref](https://search.crossref.org/) — DOI and bibliographic metadata verification.
+- [OpenAlex](https://openalex.org/) — open scholarly metadata and research graph.
+- [ACL Anthology](https://aclanthology.org/) — official NLP publication records.
+- [PubMed](https://pubmed.ncbi.nlm.nih.gov/) — biomedical literature verification.
+
+</details>
 
 ## Recommended evaluation protocol
 
-The final review project proposes a layered cross-domain protocol:
+A practical cross-domain benchmark should combine multiple task and evidence settings.
 
-1. **Run two conditions:** closed-book generation and controlled evidence-grounded generation.
-2. **Cover four task families:** constrained QA, claim–evidence verification, long-form synthesis and temporally changing questions.
-3. **Stratify by scientific domain:** medicine, biology, chemistry, physics, climate science and engineering.
-4. **Score at multiple levels:**
-   - answer correctness;
-   - atomic claim precision and coverage;
-   - contradiction and numerical/unit accuracy;
-   - evidence retrieval and citation entailment;
-   - calibration, uncertainty and abstention; and
-   - severity of potential scientific harm.
-5. **Control contamination and staleness:** use hidden items, temporal splits, versioned evidence snapshots and refreshed test streams.
-6. **Audit automated judges:** calibrate model- or entailment-based evaluation against blinded expert review.
-7. **Report disaggregated results:** publish scores by domain, task, retrieval condition and error type rather than only a macro-average.
+### 1. Run two evidence conditions
 
-This design combines evidence retrieval with generation instead of assuming that retrieval alone guarantees factuality.[^rag][^retrievalpretraining] It also treats time-sensitive knowledge as a separate evaluation dimension.[^freshllms]
+- **Closed-book:** tests stored knowledge, reasoning, uncertainty, and abstention.
+- **Evidence-grounded:** tests retrieval, source selection, synthesis, and attribution.
 
-## Literature-review workflow
+### 2. Cover four task families
 
-The workbook records the following staged process:
+1. constrained scientific question answering;
+2. claim–evidence verification;
+3. long-form scientific synthesis; and
+4. temporally changing or false-premise questions.
 
-| Stage | Recommended tool(s) | Purpose |
-|---|---|---|
-| Topic exploration | Semantic Scholar and Elicit | Test terminology and identify benchmark families |
-| Initial discovery | Semantic Scholar | Retrieve a precise, metadata-rich starting set |
-| Foundational literature | ResearchRabbit and Litmaps | Follow backward citations and chronological origins |
-| Recent literature | Semantic Scholar and Litmaps | Apply year filters and forward-citation expansion |
-| Related-paper expansion | ResearchRabbit | Explore similar work and citation networks |
-| Comparison and synthesis | Elicit | Structure research questions, methods, findings and limitations |
-| Gap identification | Elicit, Litmaps and human review | Compare limitations and inspect sparse or emerging areas |
-| Final writing | Human synthesis supported by all four tools | Read sources, reconcile definitions and cite accurately |
+### 3. Evaluate at several levels
 
-The process intentionally retains human verification: tool-generated summaries and citation-network proximity are discovery aids, not evidence by themselves.
+- final answer;
+- reasoning steps;
+- atomic claims;
+- evidence and citations;
+- numerical values and units;
+- confidence and abstention; and
+- potential scientific harm.
+
+### 4. Preserve reproducibility
+
+Record:
+
+- model and version;
+- prompt and decoding settings;
+- evaluation date;
+- retrieval query and index;
+- evidence snapshot;
+- scoring implementation;
+- judge model, if used; and
+- raw outputs and expert adjudication notes.
+
+### 5. Report disaggregated results
+
+Publish results by domain, task, evidence condition, language, error type, and risk tier before presenting any macro-average.
+
+## Citation-integrity workflow
+
+```mermaid
+flowchart LR
+    A[Generate or collect text] --> B[Inventory references]
+    B --> C[Select audit sample]
+    C --> D[Verify publication and metadata]
+    D --> E[Check DOI / arXiv / PMID]
+    E --> F[Map each claim to its citation]
+    F --> G[Judge full, partial, or no support]
+    G --> H[Record limitations and evidence location]
+    H --> I[Report authenticity and support separately]
+```
+
+### Minimum verification fields
+
+- publication found;
+- title match;
+- author match;
+- year and venue match;
+- identifier match;
+- claim supported, partially supported, contradicted, or not addressed;
+- page, section, table, or figure containing the evidence; and
+- source limitation.
+
+## Literature-discovery workflow
+
+```mermaid
+flowchart TD
+    A[Define question and inclusion criteria] --> B[Direct scholarly search]
+    B --> C[Choose verified seed papers]
+    C --> D[Backward and forward citation expansion]
+    D --> E[Recent and domain-specific search]
+    E --> F[Deduplicate and verify metadata]
+    F --> G[Extract methods, findings, and limitations]
+    G --> H[Organize themes and gaps]
+    H --> I[Read sources and write synthesis]
+```
+
+**Suggested tool sequence**
+
+1. Semantic Scholar or OpenAlex for the initial set.
+2. ResearchRabbit and Litmaps for network expansion.
+3. Semantic Scholar with year and domain filters for recent work.
+4. Elicit for structured comparison.
+5. Crossref, publisher records, ACL Anthology, arXiv, or PubMed for verification.
+6. Human reading for final inclusion, interpretation, and writing.
+
+## LaTeX and reproducibility resources
+
+Two source projects are included:
+
+### Prism conversion package
+
+[Open folder](Scientific%20Writing%20Using%20Prism%20and%20LaTeX/)
+
+Contains the original paper, Prism and Overleaf outputs, `main.tex`, `references.bib`, prompt evidence, error documentation, paragraph comparison, reflection, checklist, and screenshots.
+
+### ACM-style review package
+
+[Open folder](Review%20Paper%20Writing%20and%20Formatting%20Using%20LaTeX%20and%20Overleaf/)
+
+Contains an expanded review manuscript, bibliography, taxonomy figure, evaluation-pipeline figure, compiled PDF, and build instructions.
+
+### Standard build sequence
+
+```bash
+pdflatex main.tex
+bibtex main
+pdflatex main.tex
+pdflatex main.tex
+```
+
+When using Overleaf, upload `main.tex`, `references.bib`, and the complete `figure/` folder.
 
 ## Repository structure
 
@@ -124,36 +316,11 @@ The process intentionally retains human verification: tool-generated summaries a
 .
 ├── README.md
 ├── paper/
-│   └── AI_Assisted_Research_Paper.pdf
 ├── citation-audit/
-│   └── Citation_Integrity_Audit.pdf.pdf
 ├── citation mapping/
-│   ├── README.md
-│   ├── citation mapping.pdf
-│   └── mcl2026012_citation_verification (1).xlsx
 ├── AI-assisted Literature Review Writing/
-│   ├── README.md
-│   ├── ai assited litrature review writing.pdf
-│   └── LiteratureList_T1.xlsx
 ├── Scientific Writing Using Prism and LaTeX/
-│   ├── README.md
-│   ├── Original_Paper.pdf
-│   ├── Prism_Final_Paper.pdf
-│   ├── Overleaf_Final_Paper.pdf
-│   ├── main.tex
-│   ├── references.bib
-│   ├── Prompt_Log.pdf
-│   ├── Error_Log.pdf
-│   ├── Paragraph_Comparison.pdf
-│   ├── Reflection.pdf
-│   ├── Submission_Checklist.pdf
-│   └── figure/
 ├── Review Paper Writing and Formatting Using LaTeX and Overleaf/
-│   ├── README.md
-│   ├── benchmarking_factual_accuracy_scientific_domains_final.pdf
-│   ├── main.tex
-│   ├── references.bib
-│   └── figure/
 ├── datasets/
 ├── implementations/
 ├── references/
@@ -161,62 +328,50 @@ The process intentionally retains human verification: tool-generated summaries a
 └── LICENSE
 ```
 
-## Compile the LaTeX projects
+## Contributing
 
-### Prism conversion project
+Contributions are welcome for:
 
-```bash
-cd "Scientific Writing Using Prism and LaTeX"
-pdflatex main.tex
-bibtex main
-pdflatex main.tex
-pdflatex main.tex
+- new scientific factuality benchmarks;
+- domain-specific datasets;
+- evaluation metrics and implementations;
+- multilingual resources;
+- dynamic or contamination-resistant benchmarks;
+- citation-verification tools; and
+- reproducibility guides.
+
+### Add a resource
+
+1. Confirm that the publication or project exists.
+2. Prefer a DOI, official publisher page, arXiv record, or official repository.
+3. Add it to the most relevant Markdown file.
+4. Use the entry template below.
+5. Check that every link works.
+6. Open a pull request with a concise explanation.
+
+```markdown
+- **Resource name** — one-sentence description.
+  - **Persistent link:** `DOI, arXiv, publisher, or official repository URL`
+  - **Task:** claim verification / QA / long-form factuality / retrieval / other
+  - **Domain:** biomedical / physics / chemistry / multidisciplinary / other
+  - **Evidence:** closed-book / supplied context / retrieval / tools
+  - **Code or data:** official-link
+  - **Limitation:** one concise limitation
 ```
 
-### ACM-style review project
+## Reference checklist
 
-```bash
-cd "Review Paper Writing and Formatting Using LaTeX and Overleaf"
-pdflatex main.tex
-bibtex main
-pdflatex main.tex
-pdflatex main.tex
-```
+Before merging a new citation:
 
-The ACM-style source uses:
-
-```latex
-\documentclass[manuscript,nonacm]{acmart}
-```
-
-Upload `main.tex`, `references.bib` and the `figure/` folder together when using Overleaf.
-
-## Citation policy
-
-When adding a new resource:
-
-1. Prefer the DOI, ACL Anthology, publisher, official repository or arXiv record.
-2. Confirm that the identifier resolves to the stated publication.
-3. Check title, authors, year and venue.
-4. Distinguish publication authenticity from claim support.
-5. Cite the source immediately after the statement it supports.
-6. Do not leave unresolved citation placeholders; use a working persistent link or a Markdown footnote.
-7. Record limitations and partial support rather than forcing a binary verified/not-verified judgment.
-
-## References
-
-[^pubmedqa]: Q. Jin, B. Dhingra, Z. Liu, W. Cohen, and X. Lu. “PubMedQA: A Dataset for Biomedical Research Question Answering.” EMNLP-IJCNLP, 2019. [DOI](https://doi.org/10.18653/v1/D19-1259).
-[^scifact]: D. Wadden, S. Lin, K. Lo, et al. “Fact or Fiction: Verifying Scientific Claims.” EMNLP, 2020. [DOI](https://doi.org/10.18653/v1/2020.emnlp-main.609).
-[^truthfulqa]: S. Lin, J. Hilton, and O. Evans. “TruthfulQA: Measuring How Models Mimic Human Falsehoods.” ACL, 2022. [DOI](https://doi.org/10.18653/v1/2022.acl-long.229).
-[^halueval]: J. Li, X. Cheng, X. Zhao, J.-Y. Nie, and J.-R. Wen. “HaluEval: A Large-Scale Hallucination Evaluation Benchmark for Large Language Models.” EMNLP, 2023. [DOI](https://doi.org/10.18653/v1/2023.emnlp-main.397).
-[^selfcheckgpt]: P. Manakul, A. Liusie, and M. J. F. Gales. “SelfCheckGPT: Zero-Resource Black-Box Hallucination Detection for Generative Large Language Models.” EMNLP, 2023. [arXiv](https://arxiv.org/abs/2303.08896).
-[^factscore]: S. Min, K. Krishna, X. Lyu, et al. “FActScore: Fine-Grained Atomic Evaluation of Factual Precision in Long-Form Text Generation.” EMNLP, 2023. [arXiv](https://arxiv.org/abs/2305.14251).
-[^multifact]: S. Shafayat, E. Kim, J. Oh, and A. Oh. “Multi-FAct: Assessing Factuality of Multilingual LLMs Using FActScore.” 2024. [arXiv](https://arxiv.org/abs/2402.18045).
-[^gpqa]: D. Rein, B. L. Hou, A. C. Stickland, et al. “GPQA: A Graduate-Level Google-Proof Q&A Benchmark.” 2023. [arXiv](https://arxiv.org/abs/2311.12022).
-[^rag]: P. Lewis, E. Perez, A. Piktus, et al. “Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks.” NeurIPS, 2020. [Paper](https://proceedings.neurips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html).
-[^retrievalpretraining]: B. Wang, W. Ping, P. Xu, et al. “Shall We Pretrain Autoregressive Language Models with Retrieval? A Comprehensive Study.” EMNLP, 2023. [DOI](https://doi.org/10.18653/v1/2023.emnlp-main.482).
-[^freshllms]: T. Vu, M. Iyyer, X. Wang, et al. “FreshLLMs: Refreshing Large Language Models with Search Engine Augmentation.” Findings of ACL, 2024. [DOI](https://doi.org/10.18653/v1/2024.findings-acl.813).
+- [ ] The publication exists.
+- [ ] The title and authors match the official record.
+- [ ] The year and venue are correct.
+- [ ] The DOI, arXiv ID, PMID, or URL resolves correctly.
+- [ ] The linked source supports the description.
+- [ ] The resource is placed in the correct category.
+- [ ] The description distinguishes findings from limitations.
+- [ ] The entry does not duplicate an existing resource.
 
 ## License
 
-Released under the [MIT License](LICENSE).
+This repository is available under the [MIT License](LICENSE).
