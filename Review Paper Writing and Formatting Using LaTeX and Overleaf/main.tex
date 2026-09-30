@@ -1,0 +1,243 @@
+\documentclass[manuscript,nonacm]{acmart}
+
+% ACM Computing Surveys small-trim journal submission format.
+% The official ACM template requires the manuscript option for review.
+% Assignment copy: retain the official ACM manuscript class without an ACM submission footer.
+\setcopyright{none}
+\settopmatter{printacmref=false}
+\renewcommand\footnotetextcopyrightpermission[1]{}
+
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{microtype}
+\setlength{\emergencystretch}{3em}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\metric}[1]{\textit{#1}}
+
+\begin{document}
+
+\title{Benchmarking Factual Accuracy of Large Language Models Across Scientific Domains}
+
+\author{Aman Kumar}
+\email{mcl2026012@iiita.ac.in}
+
+\begin{abstract}
+The integration of large language models (LLMs) into scientific research, education, and clinical workflows creates a need for evaluation protocols that measure more than fluent answer generation. This review synthesizes representative benchmarks and evaluation methods for factual accuracy across biomedical science, mathematics and physics, and multimodal scientific reasoning. It organizes the literature along three complementary axes: knowledge and reasoning competence, evidence- and claim-grounded verification, and reliability under hallucination, temporal change, and uncertainty. The review compares resources including PubMedQA, MultiMedQA/Med-PaLM, SciFact, TruthfulQA, MMLU, GPQA, SciBench, ScienceQA, HaluEval, FActScore, SelfCheckGPT, and FreshLLMs. It also examines retrieval-augmented generation (RAG), chain-of-thought prompting, consistency checks, atomic claim scoring, calibration, and abstention. The synthesis shows that benchmark scores are not interchangeable: exact-match accuracy, evidence entailment, citation completeness, calibration, and error severity capture different properties of a scientific system. The paper proposes a practical cross-domain evaluation protocol that separates task mode from evaluation dimensions and identifies open gaps in contamination auditing, temporal validity, retrieval and citation quality, multimodal provenance, and human-in-the-loop review.
+\end{abstract}
+
+\keywords{large language models, factual accuracy, hallucination, scientific benchmarking, evidence grounding, retrieval-augmented generation}
+
+\maketitle
+
+\section{Introduction}\label{sec:introduction}
+Large language models (LLMs), enabled by the Transformer architecture, have demonstrated strong capabilities in language understanding and generation \cite{vaswani2017attention,brown2020language}. Instruction tuning and reinforcement learning from human feedback improve instruction following, but a helpful tone or a well-structured answer does not guarantee factual reliability \cite{ouyang2022training}. This distinction becomes particularly important in scientific settings, where a fabricated reference, an incorrect unit conversion, or an overconfident medical statement can mislead research, teaching, or clinical decisions.
+
+Scientific factuality is not a single property. A model may retrieve a relevant fact but misstate its scope; solve a numerical problem but use an invalid assumption; cite a genuine paper that does not entail the claim; or give a plausible answer to an ambiguous question without acknowledging uncertainty. In addition, scientific knowledge changes over time as new evidence is published, methods are revised, and clinical guidance is updated. These characteristics make it difficult to interpret one-dimensional scores obtained from static question-answering datasets.
+
+This review addresses the following questions:
+\begin{enumerate}[leftmargin=*,itemsep=1pt,topsep=2pt]
+    \item Which benchmark families are used to evaluate factual accuracy and scientific reasoning in LLMs?
+    \item What does each family measure, and what does it leave unmeasured?
+    \item How do retrieval, structured reasoning, consistency checks, and human review affect evaluation quality?
+    \item Which research gaps prevent reliable comparison across scientific domains?
+\end{enumerate}
+
+The main contribution is a cross-domain synthesis that treats factual accuracy as a measurement problem rather than a leaderboard property. As summarized by the taxonomy in Figure~\ref{fig:taxonomy}, the literature can be organized into knowledge/reasoning benchmarks, evidence/claim verification, and reliability/dynamic evaluation. The proposed reporting framework then combines answer correctness with evidence entailment, atomic claim precision, calibration, abstention, temporal validity, and error severity. Equation~\ref{eq:factscore} gives one example of why atomic claim precision is not equivalent to answer-level accuracy.
+
+\section{Review Scope and Conceptual Framework}\label{sec:scope}
+This is a focused narrative review of widely used, publicly described resources and methods relevant to scientific factuality. The starting set is the previously submitted manuscript and its bibliography; the set is organized and strengthened rather than treated as a systematic meta-analysis. We retain benchmarks that expose at least one of four evaluation needs: domain knowledge, scientific reasoning, evidence attribution, or reliability under uncertainty and change.
+
+We distinguish five related but non-identical outcomes:
+\begin{description}[leftmargin=*,style=nextline,itemsep=1pt]
+\item[Answer correctness] Whether the final answer matches an accepted label, number, or expert judgment.
+\item[Claim support] Whether each factual statement is entailed by an identified source or accepted scientific record.
+\item[Reasoning validity] Whether intermediate calculations, assumptions, units, and transformations are valid.
+\item[Calibration and abstention] Whether confidence tracks correctness and the system declines when evidence is insufficient.
+\item[Temporal validity] Whether the answer is correct relative to a specified knowledge cutoff, publication window, or current evidence state.
+\end{description}
+
+These outcomes should be reported separately. For example, a model can receive full credit on a multiple-choice item while giving an unsupported explanation, or achieve high agreement across sampled answers while repeating the same false premise. Conversely, an answer that is cautious, partially supported, and explicit about uncertainty may be more useful than a confident but brittle exact-match response.
+
+\begin{equation}
+    \mathrm{Atomic\ Factuality}(r)=\frac{\sum_{i=1}^{n}\mathbb{1}[c_i\ \text{is supported}]}{n},
+    \qquad r=\{c_1,\ldots,c_n\},
+    \label{eq:factscore}
+\end{equation}
+
+where a response $r$ is decomposed into $n$ atomic claims. This measure is useful for long-form generation, but it depends on the quality of claim decomposition, the reliability of the evidence source, and the judgment used to determine entailment. Therefore, it should complement rather than replace answer correctness and expert review.
+
+\section{Taxonomy of Scientific Factuality Benchmarks}\label{sec:taxonomy}
+Figure~\ref{fig:taxonomy} presents a taxonomy based on the primary object being evaluated. The categories overlap in practice: ScienceQA is multimodal but also tests reasoning; SciFact requires retrieval and claim verification; and FActScore evaluates generated text but relies on external evidence. The taxonomy is therefore a reporting aid, not a claim that each resource belongs to only one category.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figures/taxonomy.png}
+    \Description{Taxonomy diagram grouping scientific factuality benchmarks into knowledge and reasoning, evidence and claims, and reliability and dynamics, with multimodal science as a cross-cutting layer.}
+    \caption{Taxonomy of scientific factuality evaluation. Benchmark families overlap, but their primary evaluation objects differ: knowledge and reasoning, evidence and claims, or reliability under hallucination and temporal change.}
+    \label{fig:taxonomy}
+\end{figure}
+
+\subsection{Knowledge and Reasoning Benchmarks}\label{sec:knowledge}
+Early language-model evaluation emphasized general linguistic competence. GLUE and SuperGLUE standardized language-understanding tasks, while MMLU broadened academic evaluation across 57 subjects including mathematics, computer science, and medicine \cite{wang2018glue,wang2019superglue,hendrycks2021mmlu}. These resources are useful for coverage and comparability, but high performance can combine memorization, test-taking heuristics, domain knowledge, and reasoning in ways that are difficult to disentangle.
+
+GPQA was designed around difficult graduate-level questions written by domain experts and intended to be resistant to simple web search \cite{rein2023gpqa}. SciBench targets college-level scientific problem solving with quantitative and symbolic tasks \cite{wang2023scibench}. Together, these benchmarks move beyond surface fluency, yet neither by itself establishes that a model's derivation is valid or that its stated assumptions are scientifically appropriate. For quantitative tasks, evaluation should record the final answer, units, intermediate transformations, and whether the problem is underspecified.
+
+\subsection{Evidence- and Claim-Grounded Benchmarks}\label{sec:evidence}
+PubMedQA uses biomedical research questions derived from abstracts and a compact answer space of yes, no, or maybe \cite{jin2019pubmedqa}. Its context-linked design makes it more informative for evidence-sensitive reading than an ungrounded question bank, although its coverage remains concentrated in biomedical literature.
+
+SciFact frames scientific fact checking as evidence retrieval followed by supported/refuted classification with rationales \cite{wadden2020scifact}. This design makes the evidence path visible and allows retrieval quality to be assessed separately from claim classification. At the response level, FActScore decomposes long-form generations into atomic claims and estimates the proportion supported by a reliable knowledge source \cite{min2023factscore}. The central lesson is that citation presence is not citation correctness: a response may contain references while still making claims that the cited material does not entail.
+
+\subsection{Reliability, Hallucination, and Dynamic Evaluation}\label{sec:reliability}
+TruthfulQA tests whether a model reproduces common misconceptions and false beliefs \cite{lin2022truthfulqa}. HaluEval provides a larger hallucination-oriented collection with human annotations \cite{li2023halueval}. SelfCheckGPT uses agreement among independently sampled answers as a black-box signal of potential hallucination \cite{manakul2023selfcheckgpt}. Agreement can reveal instability, but consistency alone cannot establish truth: a model may consistently repeat an error.
+
+FreshLLMs introduces time-sensitive and false-premise questions with search augmentation \cite{vu2024freshllms}. Dynamic evaluation is particularly important for science, where a benchmark's answer key may become stale, a result may be retracted, or the accepted recommendation may change. A defensible report should state the reference date and distinguish stale knowledge from reasoning failure.
+
+\section{Domain-Specific Benchmarking}\label{sec:domains}
+Different scientific fields expose different failure modes. Table~\ref{tab:benchmarks} compares representative resources by domain, primary task, evidence mode, and limitation. The comparison shows why a single aggregate score is inadequate for cross-domain claims.
+
+\begin{table*}[t]
+\caption{Representative resources for evaluating factuality and scientific reasoning in LLMs.}
+\label{tab:benchmarks}
+\small
+\setlength{\tabcolsep}{2pt}
+\begin{tabularx}{\textwidth}{p{1.55cm}p{1.7cm}p{2.7cm}p{2.0cm}Y}
+\toprule
+\textbf{Resource} & \textbf{Domain / modality} & \textbf{Primary task} & \textbf{Main signal} & \textbf{Strength and limitation}\\
+\midrule
+PubMedQA & Biomedical text & Research-question answering with abstract context & Label accuracy; evidence reading & Compact, evidence-linked task; coverage is primarily biomedical and abstract-based.\\
+MultiMedQA / Med-PaLM & Medical and biomedical & Mixed medical QA with expert assessment & Accuracy, factuality, harm, bias & Adds safety-sensitive review; clinical nuance requires expert judgment.\\
+SciFact & Scientific text & Retrieve evidence and verify claims & Support/refute plus rationale & Makes retrieval and entailment explicit; tied to its source corpus.\\
+MMLU / GPQA & Academic and expert reasoning & Broad subject QA; graduate-level expert QA & Exact-match accuracy & Broad and challenging; can conflate knowledge, reasoning, and test-taking.\\
+SciBench & Mathematics and science & College-level quantitative problem solving & Final answer and problem-solving accuracy & Tests symbolic and numerical reasoning; limited open-ended evidence use.\\
+ScienceQA & Multimodal science & Question answering from text and images & Answer plus explanation & Tests multimodal reasoning; differs from expert research workflows.\\
+TruthfulQA / HaluEval & General reliability & Misconceptions and hallucination recognition & Truthfulness or detection accuracy & Targets failure modes directly; synthetic or general-domain artifacts may transfer imperfectly.\\
+FActScore & Long-form generation & Atomic claim decomposition and evidence checking & Supported-claim fraction & Fine-grained precision; errors in decomposition and evidence judgment propagate.\\
+SelfCheckGPT & Black-box generation & Cross-sample consistency checking & Agreement / inconsistency & Needs no external database; consistency is not proof of truth.\\
+FreshLLMs & Dynamic factuality & Time-sensitive and false-premise QA & Freshness and truthfulness & Tests temporal validity; requires refreshing questions and evidence.\\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\subsection{Biomedical Science}\label{sec:biomedical}
+Biomedical evaluation requires more than recall of medical terminology. PubMedQA preserves research context and asks the model to judge whether an abstract supports a research question \cite{jin2019pubmedqa}. MultiMedQA and the Med-PaLM line broaden evaluation across medical datasets and add human dimensions including factuality, precision, potential harm, and bias \cite{singhal2023large}. These dimensions are important because an answer can be technically plausible yet unsafe if it omits contraindications, overstates evidence, or fails to recommend professional review.
+
+A stronger biomedical protocol should record: (i) evidence retrieval and publication date, (ii) uncertainty and abstention, (iii) distinction between correlation and causation, (iv) whether recommendations are supported by guidelines or primary studies, and (v) error severity. Examination-style accuracy remains useful, but it should not be presented as a proxy for safe clinical reasoning.
+
+\subsection{Mathematics and Physics}\label{sec:mathphysics}
+Mathematics and physics expose a different failure mode: a model may give a correct numerical answer for an invalid derivation. SciBench and GPQA provide useful tests of quantitative and expert reasoning \cite{wang2023scibench,rein2023gpqa}, but robust evaluation should additionally inspect unit consistency, conservation laws, boundary conditions, assumption tracking, and the distinction between an exact result and an approximation. For free-form solutions, a checker should score both the final result and the validity of intermediate steps. Chain-of-thought prompting can make assumptions more visible, but the existence of a coherent explanation should not be confused with proof of correctness.
+
+\subsection{Multimodal Scientific Reasoning}\label{sec:multimodal}
+Scientific knowledge is frequently communicated through diagrams, graphs, tables, microscopy images, and instrument outputs. ScienceQA combines textual and visual information with explanatory reasoning \cite{lu2022scienceqa}. Multimodal factuality should therefore separate three stages: visual perception, scientific interpretation, and language generation. An answer can be linguistically accurate relative to a misread axis, legend, or unit. Provenance should record which pixels, captions, or table cells support the conclusion, and benchmark items should contain controlled perturbations to test sensitivity to visual evidence.
+
+\section{Evaluation and Mitigation Approaches}\label{sec:approaches}
+No single technique guarantees factuality. Current systems combine prompting, external evidence, post-hoc checking, and abstention. Figure~\ref{fig:pipeline} presents a modular pipeline that keeps retrieval, generation, claim checking, and human review visible as separate stages.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figures/pipeline.png}
+    \Description{Evaluation flowchart showing task mode, evidence retrieval, model response, atomic claims and checks, and reported metrics, with source-quality and entailment checks feeding human expert review.}
+    \caption{Recommended evaluation pipeline for scientific LLM factuality. Separating evidence retrieval, generation, claim checking, and expert review exposes where an error enters the system.}
+    \label{fig:pipeline}
+\end{figure}
+
+\subsection{Chain-of-Thought and Structured Reasoning}\label{sec:cot}
+Chain-of-thought (CoT) prompting can improve performance on arithmetic, symbolic, and other reasoning tasks by eliciting intermediate steps \cite{wei2022chain}. In scientific evaluation, structured reasoning is most useful when the evaluator can check calculations, units, assumptions, and evidence links. However, generated reasoning is not guaranteed to be faithful to the internal process that produced an answer, and a polished chain can rationalize an incorrect conclusion. Reporting should therefore distinguish final-answer accuracy from step-level validity and should avoid treating longer explanations as inherently better.
+
+\subsection{Retrieval-Augmented Generation}\label{sec:rag}
+Retrieval-augmented generation (RAG) combines model parameters with information retrieved from an external source \cite{lewis2020rag}. Retrieval can improve access to current scientific evidence and provide provenance through paper, database, or guideline identifiers. Studies of retrieval during pretraining also show that retrieval changes how knowledge-intensive generation interacts with model parameters \cite{wang2023retrieval}.
+
+RAG introduces additional failure surfaces: the retriever may miss the relevant document, return an outdated or irrelevant passage, or supply evidence that the generator misreads. A RAG evaluation should therefore report retrieval recall or hit rate, evidence relevance, entailment, citation completeness, final answer correctness, and temporal validity separately. A citation attached to a sentence is not sufficient unless the cited passage supports the sentence's precise scope.
+
+\subsection{Consistency, Atomic Scoring, and Human Review}\label{sec:consistency}
+SelfCheckGPT provides a black-box consistency signal when token probabilities and external knowledge bases are unavailable \cite{manakul2023selfcheckgpt}. FActScore provides a claim-level precision view for long-form text \cite{min2023factscore}. Multi-Fact extends FActScore-oriented analysis to multilingual factuality settings \cite{shafayat2024multifact}. These methods complement human review but do not eliminate it. Claim decomposition, source selection, and entailment decisions are themselves evaluation tasks.
+
+Human experts are especially important for ambiguous, high-stakes, or rapidly changing questions. To improve reproducibility, reviewers should receive a rubric with explicit criteria for correctness, evidence quality, uncertainty, harm, and severity. Agreement statistics and adjudication rules should be reported rather than hiding disagreement inside a single score.
+
+\begin{table}[t]
+\caption{Evaluation dimensions that should be reported separately.}
+\label{tab:dimensions}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{\linewidth}{p{2.0cm}Y}
+\toprule
+\textbf{Dimension} & \textbf{Measure and interpretation}\\
+\midrule
+Correctness & \textbf{Measure:} exact match, F1, or expert rating. \textbf{Interpretation:} whether the final answer is acceptable; can hide unsupported explanation.\\
+Claim support & \textbf{Measure:} atomic precision or entailment. \textbf{Interpretation:} whether statements follow from evidence; depends on decomposition and source quality.\\
+Reasoning validity & \textbf{Measure:} step checks, units, or symbolic verification. \textbf{Interpretation:} whether the route to the answer is valid; a correct endpoint can mask an invalid path.\\
+Calibration & \textbf{Measure:} Brier score, ECE, or selective risk. \textbf{Interpretation:} whether confidence tracks correctness; confidence may be poorly elicited by prompts.\\
+Abstention & \textbf{Measure:} coverage--risk curve. \textbf{Interpretation:} whether the model declines when evidence is insufficient; refusal style can be mistaken for safety.\\
+Freshness & \textbf{Measure:} date-aware accuracy or temporal split. \textbf{Interpretation:} whether the answer is valid for a specified time; static labels become stale.\\
+Severity & \textbf{Measure:} weighted error rate. \textbf{Interpretation:} whether mistakes are consequential; requires domain-specific judgment.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Comparative Analysis}\label{sec:comparison}
+The benchmark families differ in what they make observable. Closed-book multiple-choice resources are efficient and reproducible, but they provide limited evidence about provenance. Evidence-linked tasks make retrieval and entailment inspectable, but their conclusions depend on corpus coverage and annotation quality. Long-form factuality metrics reveal partial support and unsupported claims, yet require more expensive decomposition and checking. Dynamic benchmarks measure temporal validity, but they require maintenance rather than a one-time release.
+
+\subsection{Why Scores Are Not Interchangeable}\label{sec:scorelimits}
+An MMLU or GPQA score primarily estimates task performance under a fixed protocol. A SciFact score additionally reflects retrieval and claim-verification ability. FActScore estimates the precision of generated claims relative to a source, while SelfCheckGPT estimates instability across samples. These quantities answer different questions and should not be averaged without a prespecified measurement model.
+
+The same distinction applies to mitigation. RAG may improve freshness but reduce reliability when retrieval is noisy. CoT may improve quantitative reasoning while increasing the number of opportunities for unsupported assertions. Consistency checking can identify unstable answers but can also reward confidently repeated misinformation. Evaluation should therefore compare systems on matched modes and report the complete dimension vector rather than only the best-performing metric.
+
+\subsection{Recommended Reporting Protocol}\label{sec:reporting}
+For each benchmark item or generated response, the following metadata should be retained:
+\begin{enumerate}[leftmargin=*,itemsep=1pt,topsep=2pt]
+    \item task mode: closed-book, evidence-grounded, multimodal, or dynamic;
+    \item source set, publication dates, and retrieval configuration;
+    \item model version, knowledge cutoff, prompt, decoding settings, and number of samples;
+    \item answer correctness, atomic claim support, citation completeness, and calibration;
+    \item abstention behavior and severity-weighted error categories; and
+    \item contamination checks, human-review protocol, adjudication, and uncertainty intervals.
+\end{enumerate}
+
+This metadata makes results more auditable and helps researchers diagnose whether a change improves the model, the retriever, the prompt, or the evaluator.
+
+\section{Research Gaps and Future Directions}\label{sec:gaps}
+Table~\ref{tab:gaps} summarizes the main gaps identified by the comparison. The common theme is that evaluation should expose failure mechanisms rather than produce a single leaderboard number.
+
+\begin{table*}[t]
+\caption{Research gaps and directions for more reliable scientific factuality evaluation.}
+\label{tab:gaps}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{p{2.2cm}p{3.8cm}p{4.2cm}Y}
+\toprule
+\textbf{Gap} & \textbf{Observed failure} & \textbf{Needed evaluation design} & \textbf{Expected benefit}\\
+\midrule
+Contamination & Benchmark items or close variants may appear in training data. & Dynamic held-out items, canary questions, memorization probes, and transparent data statements. & Separates generalization from recall.\\
+Temporal drift & Static answers become outdated after new studies, retractions, or guideline changes. & Time-stamped items, publication-window splits, and periodic refresh with versioned answer keys. & Measures whether systems know when a claim is valid.\\
+Ambiguity & Multiple answers can be defensible under different assumptions. & Explicit assumptions, expert rationales, partial credit, and calibrated uncertainty. & Reduces false negatives and rewards scientifically responsible answers.\\
+Retrieval and citations & Relevant documents are missed or cited without entailment. & Separate retrieval recall, evidence relevance, entailment, citation completeness, and source quality. & Identifies whether the error comes from search or generation.\\
+Calibration and abstention & Models answer confidently when evidence is weak. & Selective prediction, risk--coverage curves, abstention rewards, and severity-weighted scoring. & Aligns evaluation with safe deployment.\\
+Multimodal provenance & A model misreads a graph or image while producing fluent text. & Region- or cell-level evidence links, controlled visual perturbations, and modality-specific error labels. & Makes visual grounding auditable.\\
+Human oversight & Expert judgments vary and may be expensive. & Rubrics, double annotation, adjudication, agreement statistics, and active sampling of hard cases. & Improves reliability and makes review cost visible.\\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+Future work should move toward benchmark suites that combine static and dynamic questions, closed-book and evidence-grounded modes, and automatic and expert assessment. Time-aware evaluation should record not only whether a claim is supported, but also the date and status of the supporting evidence. For RAG systems, benchmarks should stress-test retrieval under synonymy, document noise, retractions, and contradictory findings. For multimodal science, the unit of evidence should extend beyond text passages to chart marks, table cells, and image regions.
+
+A further priority is uncertainty-aware deployment. Scientific systems should expose evidence, state assumptions, quantify uncertainty, and abstain when the available record is insufficient. Mechanistic interpretability may eventually help explain how scientific information is represented internally, but nearer-term gains are likely from better provenance, contamination audits, calibration studies, and domain-specific human-in-the-loop protocols.
+
+\section{Conclusion}\label{sec:conclusion}
+Benchmarking factual accuracy in scientific LLMs is a multidimensional measurement problem. Knowledge and reasoning benchmarks such as MMLU, GPQA, and SciBench estimate competence under constrained tasks; PubMedQA and SciFact make evidence use more explicit; ScienceQA adds multimodal reasoning; and TruthfulQA, HaluEval, SelfCheckGPT, FActScore, and FreshLLMs target different reliability failures. None is a complete proxy for scientific trustworthiness.
+
+Report the task mode, allowed evidence, and measured factuality dimensions. Analyze correctness, evidence support, reasoning validity, calibration, abstention, temporal validity, and error severity separately before synthesizing them with a transparent rubric. Cross-domain, time-aware, evidence-grounded, human-audited protocols are therefore needed for reliable claims about scientific LLMs.
+
+\begingroup
+\scriptsize
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+\endgroup
+
+\end{document}
